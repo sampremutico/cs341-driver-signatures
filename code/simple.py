@@ -80,6 +80,8 @@ def run(data, class_to_predict, split_size, learning_rate=0.05, num_epochs=500):
         loss.backward()
         optimizer.step()
         if (epoch) % 100 == 0:
+            print(x[0])
+            print(y_pred[0])
             print('Epoch [%d/%d] Loss: %.4f' %(epoch + 1, num_epochs, loss.data))
             
     if torch.cuda.is_available():
