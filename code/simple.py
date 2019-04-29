@@ -8,7 +8,7 @@ import random
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import confusion_matrix
 
-DATA = "../data/cs341-driver-data/nervtech/v1/drives-with-collisions/user_1636_scenario_0_repeat_0_opti.csv"
+DATA = "../data/nervtech_v1_drives-no-collisions_user_1634_scenario_0_repeat_0_opti.csv"
 
 
 def prep_data(file=DATA, label='SPEED_LIMIT', split=0.9):
