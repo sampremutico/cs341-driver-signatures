@@ -81,7 +81,7 @@ def forward_propagation(X, parameters):
     Z2 = tf.add(tf.matmul(W2, A1), b2)                                            
     A2 = tf.nn.relu(Z2)                                              
     Z3 = tf.add(tf.matmul(W3, A2), b3)
-    A3 = tf.nn.relu(Z3)
+    A3 = tf.nn.softmax(Z3)
     Z4 = tf.add(tf.matmul(W4, A3), b4)                                             
 
     return Z4
@@ -89,6 +89,10 @@ def forward_propagation(X, parameters):
 def compute_cost(Z4, Y):
     print("Shape of Z4: {}".format(Z4.shape))
     logits = tf.transpose(Z4)
+    print("LOGITS SHAPE: {}".format(logits.get_shape()))
+    print("---Printing Logits---")
+
+    # print_logits = tf.Print(logits, [logits])
 
     print("Shape of Y: {}".format(Y.shape))
     labels = tf.transpose(Y)
@@ -115,8 +119,8 @@ def get_mini_batches(X, Y, mini_batch_size = 64):
 
     return mini_batches
 
-def model(X_train, Y_train, X_test, Y_test, learning_rate = 0.001,
-          num_epochs = 2500, print_cost = True):
+def model(X_train, Y_train, X_test, Y_test, learning_rate = 0.0001,
+          num_epochs = 1000, print_cost = True):
 
     ops.reset_default_graph()
     n_x, m = X_train.shape
