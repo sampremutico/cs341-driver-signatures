@@ -31,11 +31,10 @@ def prep_data(file=DATA, label='SPEED_LIMIT', split=0.9):
     df[class_to_predict] = df[class_to_predict].map(class_mapping)
 
     X = df.drop([class_to_predict], axis=1).as_matrix()
-    # y = df[class_to_predict].as_matrix()
     y = np.asarray(y)
+    print(y[:10])
 
-    train_len = int(0.8 * len(y))
-    test_len = int(len(y) - train_len)
+
     X_train, X_test, Y_train, Y_test = train_test_split(X,y, test_size = split)
 
    
@@ -116,7 +115,7 @@ def get_mini_batches(X, Y, mini_batch_size = 64):
 
     return mini_batches
 
-def model(X_train, Y_train, X_test, Y_test, learning_rate = 0.0001,
+def model(X_train, Y_train, X_test, Y_test, learning_rate = 0.001,
           num_epochs = 2500, print_cost = True):
 
     ops.reset_default_graph()
@@ -136,7 +135,6 @@ def model(X_train, Y_train, X_test, Y_test, learning_rate = 0.0001,
         sess.run(init)
         for epoch in range(num_epochs):
             epoch_cost = 0.                      
-            num_minibatches = int(m / minibatch_size)
             
             if minibatching: 
                 minibatches = get_mini_batches(X_train, Y_train, minibatch_size)
