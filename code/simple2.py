@@ -7,18 +7,18 @@ from sklearn.metrics import confusion_matrix
 from tensorflow.python.framework import ops
 import math
 import matplotlib.pyplot as plt
-
+import os 
 DATA = "../dir/cs341-driver-data/nervtech/v1/drives-with-collisions/user_1636_scenario_0_repeat_0_opti.csv"
 
 
 def prep_data(file=DATA, label='SPEED_LIMIT', split=0.9):
     df = pd.read_csv(file)
     df = df.drop(['DATE'], axis=1)
-    print('DF SHAPE: {}'.format(df.shape))
+    # print('DF SHAPE: {}'.format(df.shape))
     # Encoding class labels
     class_to_predict = label
     class_mapping = {label:idx for idx,label in enumerate(np.unique(df[class_to_predict]))}
-    print(class_mapping)
+    # print(class_mapping)
 
     y = []
     for i, row in df.iterrows():
@@ -32,12 +32,11 @@ def prep_data(file=DATA, label='SPEED_LIMIT', split=0.9):
 
     X = df.drop([class_to_predict], axis=1).as_matrix()
     y = np.asarray(y)
-    print(y[:10])
+    # print(y[:10])
 
 
     X_train, X_test, Y_train, Y_test = train_test_split(X,y, test_size = split)
 
-   
     return X_train.T, X_test.T, Y_train.T, Y_test.T
 
 def create_placeholders(n_x, n_y):
@@ -45,8 +44,8 @@ def create_placeholders(n_x, n_y):
     Y = tf.placeholder(tf.float32, [n_y, None], name="Y")
     return X, Y
 
-def initialize_parameters():
-    W1 = tf.get_variable("W1", [50, 117], initializer = tf.contrib.layers.xavier_initializer())
+def initialize_parameters(n_x):
+    W1 = tf.get_variable("W1", [50, n_x], initializer = tf.contrib.layers.xavier_initializer())
     b1 = tf.get_variable("b1", [50,1], initializer = tf.zeros_initializer())
     W2 = tf.get_variable("W2", [25,50], initializer = tf.contrib.layers.xavier_initializer())
     b2 = tf.get_variable("b2", [25,1], initializer = tf.zeros_initializer())
@@ -81,7 +80,7 @@ def forward_propagation(X, parameters):
     Z2 = tf.add(tf.matmul(W2, A1), b2)                                            
     A2 = tf.nn.relu(Z2)                                              
     Z3 = tf.add(tf.matmul(W3, A2), b3)
-    A3 = tf.nn.softmax(Z3)
+    A3 = tf.nn.relu(Z3)
     Z4 = tf.add(tf.matmul(W4, A3), b4)                                             
 
     return Z4
@@ -120,14 +119,14 @@ def get_mini_batches(X, Y, mini_batch_size = 64):
     return mini_batches
 
 def model(X_train, Y_train, X_test, Y_test, learning_rate = 0.0001,
-          num_epochs = 1000, print_cost = True):
+          num_epochs = 2000, print_cost = True):
 
     ops.reset_default_graph()
     n_x, m = X_train.shape
     n_y = Y_train.shape[0]
     costs = []
     X, Y = create_placeholders(n_x, n_y)
-    parameters = initialize_parameters()
+    parameters = initialize_parameters(n_x)
     Z4 = forward_propagation(X, parameters)
     cost = compute_cost(Z4, Y)
     optimizer =  tf.train.AdamOptimizer(learning_rate = learning_rate).minimize(cost)
@@ -171,7 +170,20 @@ def model(X_train, Y_train, X_test, Y_test, learning_rate = 0.0001,
 
         return parameters
 
+def iterate_through_dir(directory):
+    print("DIRECTORY: {}".format(directory))
+    for file in os.listdir(directory):
+        X_train, X_test, Y_train, Y_test = prep_data(file=directory+file)
+        print("="*50)
+        print(" FILE NAME: {}".format(file))
+        parameters = model(X_train, Y_train, X_test, Y_test)
+        print("="*50)
 
-X_train, X_test, Y_train, Y_test = prep_data()
-parameters = model(X_train, Y_train, X_test, Y_test)
+if __name__ == '__main__':
+    iterate_through_dir("../dir/cs341-driver-data/nervtech/v1/drives-with-collisions/")
+    print("\n\n\n\n\n")
+    iterate_through_dir("../dir/cs341-driver-data/nervtech/v1/drives-no-collisions/")
+
+
+
 
