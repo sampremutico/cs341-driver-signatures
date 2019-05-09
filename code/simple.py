@@ -7,28 +7,69 @@ import pandas as pd
 import random
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import confusion_matrix
+from datetime import datetime
+from matplotlib import pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
+from tqdm import tqdm
 
 DATA = "../data/cs341-driver-data/nervtech/v1/drives-with-collisions/user_1636_scenario_0_repeat_0_opti.csv"
+DATA_NC = "../data/cs341-driver-data/nervtech/v1/drives-no-collisions/user_1634_scenario_0_repeat_0_opti.csv"
+DATA2 = "../data/cs341-driver-data/nervtech/v1/drives-with-collisions/user_1642_scenario_0_repeat_1_opti.csv"
 
 
 def prep_data(file=DATA, label='SPEED_LIMIT', split=0.9):
     df = pd.read_csv(file)
     df = df.drop(['DATE'], axis=1)
-
+    print(df.columns.values)
     # Encoding class labels
     class_to_predict = label
     class_mapping = {label:idx for idx,label in enumerate(np.unique(df[class_to_predict]))}
-    for idx, label in class_mapping.items():
-        print("Class: {} --> {} kmph Speed Limit".format(str(label), str(idx)))
+    #for idx, label in class_mapping.items():
+    #    print("Class: {} --> {} kmph Speed Limit".format(str(label), str(idx)))
     df[class_to_predict] = df[class_to_predict].map(class_mapping)
 
     X = df.drop([class_to_predict], axis=1).values
     y = df[class_to_predict].values
 
+    timestamp = df["TIMESTAMP"]
+    collisions_x1 = df["COLLISION_LOCATION_X_1"]
+    #collisions_y1 = df["POSITION_X"]
+    collision_entity_1 = df["COLLISION_ID_1"]
+    collision_entity_2 = df["COLLISION_ID_2"]
+
+    plt.scatter(timestamp, collisions_x1,s=2)
+    plt.scatter(timestamp, collision_entity_1,s=2)
+    plt.scatter(timestamp, collision_entity_2,s=2)
+    #plt.scatter(timestamp, collisions_y1)
+    plt.legend()
+    plt.show()
+
+    generate_sequences(df)
+
     train_len = int(0.8 * len(y))
     test_len = int(len(y) - train_len)
     X_train, X_test, y_train, y_test = train_test_split(X,y, test_size = split)
     return X_train, X_test, y_train, y_test
+
+# Takes in a drive and returns sequences of window_size_seconds*30,1
+def generate_sequences(drive, window_size_seconds=5, prediction_window_seconds=2):
+
+    collisions = list()
+    prev_row = None#drive.iloc(0)
+    #print(prev_row["COLLISION_LOCATION_X_1"])
+    for index, row in drive.iterrows():
+        if index != 0 and np.abs(row["COLLISION_LOCATION_X_1"] - prev_row["COLLISION_LOCATION_X_1"]) > 100:
+            ts = row["TIMESTAMP"] / 1000
+            formatted = datetime.utcfromtimestamp(ts).strftime('%Y-%m-%d %H:%M:%S.%f')
+            collisions.append((formatted, row["COLLISION_LOCATION_X_1"]))
+            #print("Found Collision")
+        prev_row = row
+    print("Found {} collisions".format(len(collisions)))
+    print("FOund {} uniqiue collisions".format(len(set(collisions))))
+    for collision in collisions:
+        print(collision)
+
+
 
 class DynamicNet(torch.nn.Module):
     def __init__(self, D_in, H, D_out):
@@ -51,7 +92,7 @@ class DynamicNet(torch.nn.Module):
 def run(data, class_to_predict, split_size, learning_rate=0.5, num_epochs=500, batch_size=50): 
     
     X_train, X_test, y_train, y_test = prep_data(data, class_to_predict, split_size)
-
+    exit(0)
     num_classes = len(set(y_train.tolist())) 
     D_in, H, D_out = X_train.shape[1], 4, num_classes
     model = DynamicNet(D_in, H, D_out)
