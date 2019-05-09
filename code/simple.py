@@ -12,9 +12,7 @@ from matplotlib import pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 from tqdm import tqdm
 
-DATA = "../data/cs341-driver-data/nervtech/v1/drives-with-collisions/user_1636_scenario_0_repeat_0_opti.csv"
-DATA_NC = "../data/cs341-driver-data/nervtech/v1/drives-no-collisions/user_1634_scenario_0_repeat_0_opti.csv"
-DATA2 = "../data/cs341-driver-data/nervtech/v1/drives-with-collisions/user_1642_scenario_0_repeat_1_opti.csv"
+DATA = "../data/nervtech_v1_drives-no-collisions_user_1634_scenario_0_repeat_0_opti.csv"
 
 
 def prep_data(file=DATA, label='SPEED_LIMIT', split=0.9):
