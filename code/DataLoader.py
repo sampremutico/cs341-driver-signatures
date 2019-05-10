@@ -14,7 +14,7 @@ from tqdm import tqdm
 
 DATA_DIR = "../data/cs341-driver-data/nervtech/v1/drives-with-collisions/"
 DATA = "user_1636_scenario_0_repeat_0_opti.csv"
-DROP_LIST = set(["RAIN", "SNOW", "AREA_ID", "SCENARIO_ID", "MODALITY_ID", "PHONE_CALL", "SUBTASK_NUMBER", "SUBTASK_ACTION", "NEXT_VEHICLE_ID"])
+DROP_LIST = set(["DATE","RAIN", "SNOW", "AREA_ID", "SCENARIO_ID", "MODALITY_ID", "PHONE_CALL", "SUBTASK_NUMBER", "SUBTASK_ACTION", "NEXT_VEHICLE_ID"])
 
 READING_HZ = 30
 
@@ -24,6 +24,7 @@ class DataLoader():
 	def __init__(self, ride_file=None, load=True):
 		self.csv = DATA_DIR + ride_file
 		self.user = DATA[5:9]
+		self.X, self.Y = None, None
 		if load == False:
 			self.df = pd.read_csv(self.csv)
 			print("Dropping {} columns".format(len(self.df.columns)))
@@ -83,7 +84,7 @@ class DataLoader():
 
 	# generates a column with 1 indicated if a crash occurs WITHIN pred_window_secs of the current reading
 	# in the future (these will then be used as the labels in our sequences)
-	def __generate_sequences(self, pred_window_secs):
+	def __generate_sequence_labels(self, pred_window_secs):
 		row_to_add = np.zeros(self.num_rows)
 		for idx, row in self.df.iterrows():
 			if row['crash_label'] == 1:
@@ -115,11 +116,42 @@ class DataLoader():
 		print(datetime.utcfromtimestamp(self.df["TIMESTAMP"][self.num_rows-1]/1000))
 		print(np.sum(self.df['crash_label']))
 		# now that we have detected crashes, create sequence labels
-		sequences = self.__generate_sequences(pred_window_secs)
-		self.df['crash_within_pred_window'] = sequences
-		# TODO: still need to actually create sequences from sequence labels now in dataframe
-		return sequences
+		if load:
+			self.df = pd.read_pickle(self.user+"_sequence_labels.pkl")
+		else:
+			sequences = self.__generate_sequence_labels(pred_window_secs)
+			self.df['crash_within_pred_window'] = sequences
+			self.df.to_pickle(self.user+"_sequence_labels.pkl")
+		return 1
 
-dl = DataLoader(DATA, load=False)
-dl.segment_crashes(load=False)
+	def generate_sequences(self, prev_window_secs=5, pred_window_secs=2, down_sampling=None):
+		sequence_length = prev_window_secs*READING_HZ
+		num_sequences = self.num_rows-sequence_length-1
+		num_input_cols = len(self.df.columns.values)
+		X, Y = np.ndarray((num_sequences, sequence_length, num_input_cols)), np.zeros(num_sequences)
+		for seq_idx in range(num_sequences):
+			if seq_idx % 10000 == 0:
+				print(seq_idx)
+			'''
+			print(len(self.df.loc[seq_idx:seq_idx+sequence_length-1].values))
+			print(self.df.loc[seq_idx:seq_idx+sequence_length-1].values)
+			print(self.df.loc[seq_idx+sequence_length]["TIMESTAMP"])
+			'''
+			X[seq_idx] = self.df.loc[seq_idx:seq_idx+sequence_length-1].values
+			Y[seq_idx] = self.df.loc[seq_idx+sequence_length]['crash_within_pred_window']
+		print(len(X), print(len(X[0])))
+		print(X[0])
+		print(len(Y))
+		print(Y[0])
+		self.X = X
+		self.Y = Y
+		
+		print(self.X.shape)
+		print(self.Y.shape)
+
+
+
+dl = DataLoader(DATA, load=True)
+dl.segment_crashes(load=True)
+dl.generate_sequences()
 
