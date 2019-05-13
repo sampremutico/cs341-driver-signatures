@@ -145,7 +145,7 @@ class DriverData():
 			# self.df.to_pickle(self.user+"_sequence_labels.pkl")
 		return 1
 
-	def generate_sequences(self, sequence_window_secs=5, crash_window=(5, 10), down_sampling=None):
+	def generate_sequences(self, sequence_window_secs=5, crash_window=(5, 10), down_sampling=None, as_np=False):
 		def are_sequences_overlapping(sequence1, sequence2):
 			if (sequence1[0] < sequence2[0] and sequence1[1] < sequence2[0]) or (sequence2[0] < sequence1[0] and sequence2[1] < sequence1[0]):
 				return False
@@ -207,9 +207,10 @@ class DriverData():
 			X[i + len(crash_sequence_indices)] = sequence
 
 		Y[:len(crash_sequence_indices)] += 1
-		X = torch.from_numpy(X)
-		Y = torch.from_numpy(Y)
-		print(X.size(), Y.size())
+		if not as_np:
+			X = torch.from_numpy(X)
+			Y = torch.from_numpy(Y)
+			print(X.size(), Y.size())
 		print('')
 
 		return X, Y
@@ -241,31 +242,31 @@ class DriverData():
 
 
 
+if __name__ == '__main__':
+	dl = DriverData(DATA, load=True)
+	# plot_course(dl.df)
+	dl.segment_crashes(load=True)
+	dl.generate_sequences()
 
-# dl = DriverData(DATA, load=True)
-# # plot_course(dl.df)
-# dl.segment_crashes(load=True)
-# dl.generate_sequences()
+	X_tensors = []
+	Y_tensors = []
 
-X_tensors = []
-Y_tensors = []
+	prev_set = None
+	for f in os.listdir(DATA_DIR):
+		print('processing data for {}'.format(f))
+		driver = DriverData(f, load=False)
 
-prev_set = None
-for f in os.listdir(DATA_DIR):
-	print('processing data for {}'.format(f))
-	driver = DriverData(f, load=False)
+		driver.segment_crashes(load=False)
+		X, Y = driver.generate_sequences()
+		X_tensors.append(X)
+		Y_tensors.append(Y)
+		print('')
 
-	driver.segment_crashes(load=False)
-	X, Y = driver.generate_sequences()
-	X_tensors.append(X)
-	Y_tensors.append(Y)
-	print('')
-
-X_final = torch.cat(X_tensors, dim=0)
-Y_final = torch.cat(Y_tensors, dim=0)
-print('final shape of X data', X_final.size())
-print('final shape of Y data', Y_final.size())
-torch.save(X_final, PYTORCH_DATA_DIR + 'data.pt')
-torch.save(Y_final, PYTORCH_DATA_DIR + 'labels.pt')
+	X_final = torch.cat(X_tensors, dim=0)
+	Y_final = torch.cat(Y_tensors, dim=0)
+	print('final shape of X data', X_final.size())
+	print('final shape of Y data', Y_final.size())
+	torch.save(X_final, PYTORCH_DATA_DIR + 'data.pt')
+	torch.save(Y_final, PYTORCH_DATA_DIR + 'labels.pt')
 
 
