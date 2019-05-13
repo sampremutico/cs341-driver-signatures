@@ -1,4 +1,4 @@
-from sklearn.ensemble import RandomForestClassifier
+from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier
 from sklearn.linear_model import LogisticRegression
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.gaussian_process import GaussianProcessClassifier
@@ -13,6 +13,7 @@ from DriverData import DriverData
 import matplotlib.pyplot as plt
 import pandas as pd
 import torch, os
+# import xgboost as xgb
 
 DATA_DIR = "../data/cs341-driver-data/nervtech/v1/drives-with-collisions/"
 
@@ -35,7 +36,6 @@ def load_data(train_split=0.8):
 		else:
 			X_ = np.concatenate((X_, X))
 			Y_ = np.concatenate((Y_, Y))
-		break
 
 	Y_ = Y_.astype(int)
 	X_train, X_test, y_train, y_test = train_test_split(X_, Y_, test_size=1.0-train_split)
@@ -60,7 +60,7 @@ if __name__ == '__main__':
 	X_train, X_test, y_train, y_test = load_data(train_split=0.8)
 	logistic_regression = LogisticRegression(penalty='l2', dual=False, tol=0.0001, C=1.0, \
 							fit_intercept=True, intercept_scaling=1, class_weight=None, \
-							random_state=None, solver='sag', max_iter=100, \
+							random_state=None, solver='sag', max_iter=200, \
 							verbose=0, warm_start=False, n_jobs=None)
 
 	random_forest = RandomForestClassifier(n_estimators=10, criterion='gini', max_depth=None, \
@@ -68,6 +68,12 @@ if __name__ == '__main__':
 						max_features='auto', max_leaf_nodes=None, min_impurity_decrease=0.0, \
 						min_impurity_split=None, bootstrap=True, oob_score=False, \
 						random_state=None, verbose=0, warm_start=False, class_weight=None)
+
+	gradient_boosting = GradientBoostingClassifier(loss='deviance', learning_rate=0.1, n_estimators=100, \
+							subsample=1.0, criterion='friedman_mse', min_samples_split=2, min_samples_leaf=1,\
+							min_weight_fraction_leaf=0.0, max_depth=3, min_impurity_decrease=0.0, min_impurity_split=None, \
+							init=None, random_state=None, max_features=None, verbose=0, max_leaf_nodes=None, warm_start=False, \
+							presort='auto')
 
 	svc = SVC()
 
@@ -88,7 +94,7 @@ if __name__ == '__main__':
 								beta_1=0.9, beta_2=0.999, epsilon=1e-08)
 
 	model_map = {'Logistic Regression': logistic_regression, 'Random Forest': random_forest, \
-				'Support Vector Classification': svc, 'Decision Tree': decision_tree, \
+				'Support Vector Classification': svc, 'Decision Tree': decision_tree, 'Gradient Boosting': gradient_boosting, \
 				'Gaussian Process': gaussian_process, 'Multilayer Perceptron': multilayer_perceptron}
 
 	for name, model in model_map.items():
