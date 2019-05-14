@@ -24,6 +24,7 @@ optimizer = torch.optim.Adam(model.parameters(), lr=1e-4)
 loss_weights = torch.tensor([0.05, 0.95])
 criterion = torch.nn.CrossEntropyLoss(weight=loss_weights)
 print('starting training!')
+
 for epoch in range(10):
   print('starting epoch {}...'.format(epoch))
   for iter, (X_batch, y_batch) in enumerate(train_data):

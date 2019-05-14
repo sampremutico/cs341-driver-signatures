@@ -58,6 +58,7 @@ def score_model(model_name, model, X_train, X_test, y_train, y_test):
 if __name__ == '__main__':
 
 	X_train, X_test, y_train, y_test = load_data(train_split=0.8)
+
 	logistic_regression = LogisticRegression(penalty='l2', dual=False, tol=0.0001, C=1.0, \
 							fit_intercept=True, intercept_scaling=1, class_weight=None, \
 							random_state=None, solver='sag', max_iter=200, \

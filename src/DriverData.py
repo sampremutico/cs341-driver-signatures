@@ -95,11 +95,11 @@ class DriverData():
 				crash_y_coords.append(prev_crash['POSITION_Y'])
 
 		print("found {} crashes".format(crash_cnt))
-		for i in range(len(crash_times)):
-			print("Crash {}".format(i))
-			print("Time {}".format(crash_times[i]))
-			print("Coordinates {},{}".format(crash_x_coords[i], crash_y_coords[i]))
-			print('')
+		#for i in range(len(crash_times)):
+		#	print("Crash {}".format(i))
+		#	print("Time {}".format(crash_times[i]))
+		#	print("Coordinates {},{}".format(crash_x_coords[i], crash_y_coords[i]))
+		#	print('')
 
 		return crash_labels
 
@@ -133,9 +133,9 @@ class DriverData():
 			self.df['crash_label'] = crash_labels
 			# self.df.to_pickle(self.user+"_segmented_crashes.pkl")
 
-		print(datetime.utcfromtimestamp(self.df["TIMESTAMP"][0]/1000))
-		print(datetime.utcfromtimestamp(self.df["TIMESTAMP"][self.num_rows-1]/1000))
-		print(np.sum(self.df['crash_label']))
+		#print(datetime.utcfromtimestamp(self.df["TIMESTAMP"][0]/1000))
+		#print(datetime.utcfromtimestamp(self.df["TIMESTAMP"][self.num_rows-1]/1000))
+		#print(np.sum(self.df['crash_label']))
 		# now that we have detected crashes, create sequence labels
 		if load:
 			self.df = pd.read_pickle(self.user+"_sequence_labels.pkl")
@@ -243,10 +243,10 @@ class DriverData():
 
 
 if __name__ == '__main__':
-	dl = DriverData(DATA, load=True)
+	#dl = DriverData(DATA, load=False)
 	# plot_course(dl.df)
-	dl.segment_crashes(load=True)
-	dl.generate_sequences()
+	#dl.segment_crashes(load=False)
+	#dl.generate_sequences()
 
 	X_tensors = []
 	Y_tensors = []
