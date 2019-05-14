@@ -25,7 +25,7 @@ def load_numpy_data():
   X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
   return X_train, X_test, y_train, y_test
 
-def load_pytorch_data():
+def load_pytorch_data(batch_size=32):
   data = DriverSequenceDataset('data.pt', 'labels.pt', '../data/pytorch/')
   train_size = int(0.8 * len(data))
   validation_size = len(data) - train_size
@@ -33,6 +33,6 @@ def load_pytorch_data():
   print('Length of training data... {}'.format(train_size))
   print('Length of validation data... {}'.format(validation_size))
 
-  train_data = DataLoader(train_data_split, batch_size=8, shuffle=True)
-  validation_data = DataLoader(validation_data_split, batch_size=8, shuffle=True)
+  train_data = DataLoader(train_data_split, batch_size, shuffle=True)
+  validation_data = DataLoader(validation_data_split, batch_size, shuffle=True)
   return train_data, validation_data
