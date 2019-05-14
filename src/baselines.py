@@ -13,7 +13,7 @@ from DriverData import DriverData
 import matplotlib.pyplot as plt
 import pandas as pd
 import torch, os
-from load_data import load_numpy_data
+from utils import load_numpy_data
 
 # import xgboost as xgb
 

@@ -1,43 +1,13 @@
-from load_data import load_pytorch_data
 from simple_lstm import SimpleLSTM
 import torch
 import numpy as np
 import matplotlib.pyplot as plt
-
-train_data, validation_data = load_pytorch_data(batch_size=32)
-
-# TODO: Move this to some utils file
-def metrics(y_pred, y_true):
-  y_pred, y_true = y_pred.numpy(), y_true.numpy()
-  assert(len(y_pred) == len(y_true))
-  num_preds = len(y_pred)
-  tp, fp, tn, fn = 0., 0., 0., 0.
-  correct = 0
-  num_crashes = 0
-  crashes_predicted = 0
-  for i in range(num_preds):
-    if y_pred[i] == y_true[i] == 1:
-      tp += 1
-    elif y_pred[i] == 1 and y_pred[i] != y_true[i]:
-      fp += 1
-    elif y_pred[i] == y_true[i] == 0:
-      tn += 1
-    elif y_pred[i] == 0 and y_pred[i] != y_true[i]:
-      fn += 1
-    if y_pred[i] == y_true[i]:
-      correct += 1
-    if y_true[i] == 1:
-      num_crashes += 1
-    if y_pred[i] == 1:
-      crashes_predicted += 1
-
-
-  return tp, fp, tn, fn, correct, num_crashes, num_preds, crashes_predicted
-
-train_data, validation_data = load_data()
+from utils import load_pytorch_data, metrics
 
 INPUT_SIZE = 76
 hidden_size = 50
+
+train_data, validation_data = load_pytorch_data(batch_size=32)
 
 model = SimpleLSTM(INPUT_SIZE, hidden_size)
 optimizer = torch.optim.Adam(model.parameters(), lr=1e-4)
@@ -95,6 +65,9 @@ plt.plot(x, losses)
 plt.show()
 
 print('finished training!')
+
+
+
 
 
 
