@@ -6,7 +6,6 @@ import numpy as np
 
 np.random.seed(42)
 
-
 def metrics(y_pred, y_true):
   y_pred, y_true = y_pred.numpy(), y_true.numpy()
   assert(len(y_pred) == len(y_true))
@@ -33,6 +32,35 @@ def metrics(y_pred, y_true):
 
 
   return tp, fp, tn, fn, correct, num_crashes, num_preds, crashes_predicted
+
+def check_validation_accuracy(model, validation_data):
+  tp, fp, tn, fn, correct, num_crashes, num_preds, crashes_predicted = 0, 0, 0, 0, 0, 0, 0, 0
+  with torch.no_grad():
+      for (val_X_batch, val_y_batch) in validation_data:
+          val_X_batch = val_X_batch.float()
+          val_y_batch = val_y_batch.long()
+          output = model(val_X_batch)
+          output = torch.squeeze(output, 0)
+          predictions = torch.argmax(output, 1)
+          btp, bfp, btn, bfn, bcorrect, bnum_crashes, bnum_preds, bcrashes_predicted = metrics(predictions, val_y_batch)
+          tp += btp
+          fp += bfp
+          tn += btn
+          fn += bfn
+          correct += bcorrect
+          num_crashes += bnum_crashes
+          num_preds += bnum_preds
+          crashes_predicted += bcrashes_predicted
+
+  precision = float(tp) / (tp + fp)
+  recall = float(tp) / (tp + fn)
+  accuracy = float(correct) / num_preds
+  print('validation overall accuracy: {}/{} ({}%)'.format(correct, num_preds, accuracy))
+  print('precision: {}'.format(precision))
+  print('recall: {}'.format(recall))
+  print('total number of crashes: {}'.format(num_crashes))
+  print('crashes predicted: {}'.format(crashes_predicted))
+  print('')
 
 def load_numpy_data():
   root_dir = '../data/pytorch/'
