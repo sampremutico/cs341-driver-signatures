@@ -13,36 +13,9 @@ from DriverData import DriverData
 import matplotlib.pyplot as plt
 import pandas as pd
 import torch, os
+from load_data import load_data
+
 # import xgboost as xgb
-
-DATA_DIR = "../data/cs341-driver-data/nervtech/v1/drives-with-collisions/"
-
-def load_data(train_split=0.8):
-	X_ = None
-	Y_ = None
-	i=0
-	for f in os.listdir(DATA_DIR):
-		print('processing data for {}'.format(f))
-		driver = DriverData(f, load=False)
-
-		driver.segment_crashes(load=False)
-		X, Y = driver.generate_sequences(as_np=True)
-		num_rows, nx, ny = X.shape
-		X = X.reshape((num_rows, nx * ny))
-
-		if X_ is None:
-			X_ = X
-			Y_ = Y
-		else:
-			X_ = np.concatenate((X_, X))
-			Y_ = np.concatenate((Y_, Y))
-
-	Y_ = Y_.astype(int)
-	X_train, X_test, y_train, y_test = train_test_split(X_, Y_, test_size=1.0-train_split)
-
-	# train_data = DataLoader(train_data_split, batch_size=8, shuffle=True)
-	# validation_data = DataLoader(validation_data_split, batch_size=8, shuffle=True)
-	return X_train, X_test, y_train, y_test
 
 def score_model(model_name, model, X_train, X_test, y_train, y_test):
 	model.fit(X_train, y_train)
@@ -57,7 +30,10 @@ def score_model(model_name, model, X_train, X_test, y_train, y_test):
 
 if __name__ == '__main__':
 
-	X_train, X_test, y_train, y_test = load_data(train_split=0.8)
+	X_train, X_test, y_train, y_test = load_data(to_numpy=True)
+	X_train = X_train.reshape(X_train.shape[0], -1)
+	X_test = X_test.reshape(X_test.shape[0], -1)
+
 
 	logistic_regression = LogisticRegression(penalty='l2', dual=False, tol=0.0001, C=1.0, \
 							fit_intercept=True, intercept_scaling=1, class_weight=None, \
@@ -100,5 +76,3 @@ if __name__ == '__main__':
 
 	for name, model in model_map.items():
 		score_model(name, model, X_train, X_test, y_train, y_test)
-
-

@@ -1,20 +1,9 @@
-from data import DriverSequenceDataset
-from torch.utils.data import DataLoader
+from load_data import load_data
 from simple_lstm import SimpleLSTM
 import torch
 import numpy as np
 
-data = DriverSequenceDataset('data.pt', 'labels.pt', '../data/pytorch/')
-
-# # should move this elsewhere
-train_size = int(0.8 * len(data))
-validation_size = len(data) - train_size
-train_data_split, validation_data_split = torch.utils.data.random_split(data, [train_size, validation_size])
-print('Length of training data... {}'.format(train_size))
-print('Length of validation data... {}'.format(validation_size))
-
-train_data = DataLoader(train_data_split, batch_size=8, shuffle=True)
-validation_data = DataLoader(validation_data_split, batch_size=8, shuffle=True)
+train_data, validation_data = load_data()
 
 INPUT_SIZE = 103
 hidden_size = 50
