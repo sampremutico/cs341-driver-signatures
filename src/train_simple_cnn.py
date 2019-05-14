@@ -11,7 +11,7 @@ INPUT_SIZE = 150#103
 hidden_size = [80,40]
 
 model = SimpleCNN(INPUT_SIZE, hidden_size)
-optimizer = torch.optim.Adam(model.parameters(), lr=1e-4)
+optimizer = torch.optim.Adam(model.parameters(), lr=1e-5)
 loss_weights = torch.tensor([0.1, 0.9])
 criterion = torch.nn.CrossEntropyLoss(weight=loss_weights)
 print('starting training!')
@@ -35,11 +35,12 @@ for epoch in range(1):
 
     losses.append(loss.item)
 
-    if iter % 40 == 0:
+    if iter % 20 == 0:
       print('Iter {} loss: {}'.format(iter, loss.item()))
       correct = 0
       total = 0
       crashes_predicted = 0
+      
 
       with torch.no_grad():
           for (val_X_batch, val_y_batch) in validation_data:
@@ -55,7 +56,7 @@ for epoch in range(1):
       print('crashes predicted: {}'.format(crashes_predicted))
       print('')
 
-plt.plot(range(len(losses)), losses)
+plt.scatter(range(len(losses)), losses)
 plt.show()
 
 print('finished training!')

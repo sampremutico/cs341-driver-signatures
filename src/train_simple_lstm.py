@@ -11,7 +11,7 @@ hidden_size = 50
 
 model = SimpleLSTM(INPUT_SIZE, hidden_size)
 optimizer = torch.optim.Adam(model.parameters(), lr=1e-4)
-loss_weights = torch.tensor([0.15, 0.85])
+loss_weights = torch.tensor([0.1, 0.9])
 criterion = torch.nn.CrossEntropyLoss(weight=loss_weights)
 print('starting training!')
 
@@ -39,7 +39,7 @@ for epoch in range(10):
       total = 0
       crashes_predicted = 0
       num_total_crashes = 0
-      losses.append(loss.item())
+      losses.append(loss.item())  
       with torch.no_grad():
           for (val_X_batch, val_y_batch) in validation_data:
               val_X_batch = val_X_batch.float()
