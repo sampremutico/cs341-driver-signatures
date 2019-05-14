@@ -12,12 +12,3 @@ class DriverSequenceDataset(Dataset):
   def __getitem__(self, idx):
     return (self.X[idx], self.y[idx])
 
-  def get_X(self, np):
-    if np: return self.X.numpy()
-    return self.X
-
-  def get_Y(self, np):
-    if np: return self.y.numpy()
-    return self.y
-
-
