@@ -2,6 +2,7 @@ from data import DriverSequenceDataset
 from torch.utils.data import DataLoader
 import torch
 from sklearn.model_selection import train_test_split
+import numpy as np
 
 def load_data(to_numpy=False):
   if to_numpy: return load_numpy_data()
@@ -13,6 +14,14 @@ def load_numpy_data():
   file_y = 'labels.pt'
   X = torch.load(root_dir + file_X).numpy()
   y = torch.load(root_dir + file_y).numpy()
+
+  N, T, D = X.shape
+  X_flattened = X.reshape((N * T, D))
+
+  X_mean = np.mean(X_flattened, axis=0, keepdims=True)
+  X_std = np.std(X_flattened, axis=0, keepdims=True)
+  X = (X - X_mean) / X_std
+
   X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
   return X_train, X_test, y_train, y_test
 
