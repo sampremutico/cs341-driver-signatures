@@ -37,9 +37,11 @@ def score_model(model_name, model, X_train, X_test, y_train, y_test):
 	print(classification_report(y_test, y_pred, labels=[0, 1]))
 	print("="*50)
 
-	if model_name == 'Random Forest': random_forest_importance(model, X_train)
+	if model_name == 'Random Forest': random_forest_importance(model, X_train, num_features_to_plot=20)
 
-def random_forest_importance(model, X_train):
+def random_forest_importance(model, X_train, num_features_to_plot=None):
+	if num_features_to_plot is None: num_features_to_plot = X_train.shape[1]
+
 	importances = model.feature_importances_
 	std = np.std([mod.feature_importances_ for mod in model.estimators_], axis=0)
 	indices = np.argsort(importances)[::-1]
@@ -48,16 +50,16 @@ def random_forest_importance(model, X_train):
 	print("Feature ranking:")
 
 	features = []
-	for f in range(X_train.shape[1]):
+	for f in range(num_features_to_plot):
 		feature = col_map[indices[f]]
 		print("%d. feature %s (%f)" % (f + 1, feature, importances[indices[f]]))
 		features.append(feature.lower())
 
 	plt.figure()
 	plt.title("Feature importances")
-	plt.bar(range(X_train.shape[1]), importances[indices], color="r", yerr=std[indices], align="center")
-	plt.xticks(range(X_train.shape[1]), features, fontsize=8)
-	plt.xlim([-1, X_train.shape[1]])
+	plt.bar(range(num_features_to_plot), importances[indices][:num_features_to_plot], color="r", yerr=std[indices][:num_features_to_plot], align="center")
+	plt.xticks(range(num_features_to_plot), features, fontsize=8)
+	plt.xlim([-1, num_features_to_plot])
 	plt.xticks(rotation=80)
 	plt.show()
 
