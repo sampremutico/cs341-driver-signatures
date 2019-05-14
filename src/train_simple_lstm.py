@@ -6,14 +6,13 @@ from utils import load_pytorch_data, metrics, check_validation_accuracy
 
 
 INPUT_SIZE = 76
-hidden_size = 50
 
-def train():
-  train_data, validation_data = load_pytorch_data(batch_size=32)
-  model = SimpleLSTM(INPUT_SIZE, hidden_size)
-  optimizer = torch.optim.Adam(model.parameters(), lr=1e-4)
-  loss_weights = torch.tensor([0.1, 0.9])
-  criterion = torch.nn.CrossEntropyLoss(weight=loss_weights)
+def train(batch_size=16, lstm_hidden_size=50, lr=1e-4, loss_weights=[0.1, 0.9], print_every=20, checkpointing=False):
+  train_data, validation_data = load_pytorch_data(batch_size)
+  model = SimpleLSTM(INPUT_SIZE, lstm_hidden_size)
+  optimizer = torch.optim.Adam(model.parameters(), lr)
+  criterion = torch.nn.CrossEntropyLoss(torch.tensor(loss_weights))
+  losses = []
   print('starting training!')
   for epoch in range(20):
     print('starting epoch {}...'.format(epoch))
@@ -23,14 +22,14 @@ def train():
       output = model(X_batch)
       output = torch.squeeze(output, 0)
       loss = criterion(output, y_batch)
-
       optimizer.zero_grad()
       loss.backward()
       optimizer.step()
 
-      if iter % 40 == 0:
+      if iter % print_every == 0:
         print('Iter {} loss: {}'.format(iter, loss.item()))
-        check_validation_accuracy(model, validation_data)
+        losses.append(loss.item())
+        f1 = check_validation_accuracy(model, validation_data)
 
   x = [i for i in range(len(losses))]
   plt.plot(x, losses)
@@ -39,7 +38,14 @@ def train():
   print('finished training!')
 
 
-train()
 
+# TODO:
+# Plot loss curves, validation accuracy/f1 scorees
+# hyperparameter tuning
+# hidden size, learning rate, loss weights
+# optimizer?
+# checkpoint models
 
-
+train(batch_size=16, lr=1e-3)
+train(batch_size=16, lr=1e-4)
+train(batch_size=16, lr=1e-5)

@@ -54,13 +54,16 @@ def check_validation_accuracy(model, validation_data):
 
   precision = float(tp) / (tp + fp)
   recall = float(tp) / (tp + fn)
+  f1 = 2 * (precision * recall) / (precision + recall)
   accuracy = float(correct) / num_preds
   print('validation overall accuracy: {}/{} ({}%)'.format(correct, num_preds, accuracy))
   print('precision: {}'.format(precision))
   print('recall: {}'.format(recall))
+  print('f1: {}'.format(f1))
   print('total number of crashes: {}'.format(num_crashes))
   print('crashes predicted: {}'.format(crashes_predicted))
   print('')
+  return f1
 
 def load_numpy_data():
   root_dir = '../data/pytorch/'
