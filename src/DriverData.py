@@ -267,17 +267,6 @@ class DriverData():
 
 
 if __name__ == '__main__':
-<<<<<<< HEAD
-	#dl = DriverData(DATA, load=False)
-	# plot_course(dl.df)
-	#dl.segment_crashes(load=False)
-	#dl.generate_sequences()
-=======
-	# dl = DriverData(DATA, load=True)
-	# # plot_course(dl.df)
-	# dl.segment_crashes(load=True)
-	# dl.generate_sequences()
->>>>>>> ddbae6dee9fb48d3449bf46add1452b78071aa35
 
 	X_tensors = []
 	Y_tensors = []
