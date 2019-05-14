@@ -10,10 +10,14 @@ from utils import load_pytorch_data, metrics, check_validation_accuracy
 #hidden_size = 50
 
 INPUT_SIZE = 150#103
+D = 76
 hidden_size = [80,40]
+
+losses = list()
+
 def train():
   train_data, validation_data = load_pytorch_data(batch_size=32)
-  model = SimpleCNN(INPUT_SIZE, hidden_size)
+  model = SimpleCNN(input_size=INPUT_SIZE, D=D, hidden_size=hidden_size)
   optimizer = torch.optim.Adam(model.parameters(), lr=1e-4)
   loss_weights = torch.tensor([0.1, 0.9])
   criterion = torch.nn.CrossEntropyLoss(weight=loss_weights)
@@ -34,6 +38,7 @@ def train():
       if iter % 40 == 0:
         print('Iter {} loss: {}'.format(iter, loss.item()))
         check_validation_accuracy(model, validation_data)
+        losses.append(loss.item())
 
   x = [i for i in range(len(losses))]
   plt.plot(x, losses)
