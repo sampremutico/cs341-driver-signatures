@@ -4,6 +4,8 @@ import torch
 from sklearn.model_selection import train_test_split
 import numpy as np
 
+np.random.seed(42)
+
 def load_data(to_numpy=False):
   if to_numpy: return load_numpy_data()
   return load_pytorch_data()
