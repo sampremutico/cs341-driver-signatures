@@ -3,8 +3,15 @@ import numpy as np
 from utils  import get_experiments_folder_name
 import argparse
 import os
+import datetime
+
+time = str(datetime.datetime.now())
+time = time.split()
 
 EXPERIMENTS_PATH = 'experiments/'
+os.makedirs(EXPERIMENTS_PATH)
+
+# Optimize this for F2 scores!
 
 def write_metrics_to_file(max_f1_score, metrics, params, path):
   filename = str(round(max_f1_score, 8))

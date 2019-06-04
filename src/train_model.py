@@ -11,7 +11,7 @@ SEQ_SIZE = 150
 #TODO: write to file, checkpoint
 def train(seq_len, window_size, model_type, params, batch_size=16, num_epochs=20, print_every=30):
   metrics = []
-  max_val_f1_score = 0.
+  max_val_f2_score = 0.
   best_model = None
 
   train_data, validation_data = load_pytorch_data(seq_len, window_size)
@@ -27,7 +27,7 @@ def train(seq_len, window_size, model_type, params, batch_size=16, num_epochs=20
   print('starting training!')
   for epoch in range(num_epochs):
     print('starting epoch {}...'.format(epoch))
-    for iter, (X_batch, y_batch) in enumerate(train_data):
+    for iter, (X_batch, y_batch, idx) in enumerate(train_data):
       X_batch = X_batch.float()
       y_batch = y_batch.long()
       output = model(X_batch)
@@ -40,17 +40,17 @@ def train(seq_len, window_size, model_type, params, batch_size=16, num_epochs=20
 
       if iter % print_every == 0:
         # print('Iter {} loss: {}'.format(iter, loss.item()))
-        f1_val, precision_val, recall_val, accuracy_val = check_accuracy(model, validation_data, False)
-        f1_train, precision_train, recall_train, accuracy_train = check_accuracy(model, train_data, False)
+        f1_val, f2_val, precision_val, recall_val, accuracy_val = check_accuracy(model, validation_data, False)
+        f1_train, f2_train, precision_train, recall_train, accuracy_train = check_accuracy(model, train_data, False)
         train_loss = loss.item()
-        metrics.append('{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}'.format(train_loss, f1_val, precision_train, recall_val, accuracy_val, f1_train, precision_train, recall_train, accuracy_train))
+        metrics.append('{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}'.format(train_loss, f1_val, f2_val, precision_train, recall_val, accuracy_val, f1_train, f2_train, precision_train, recall_train, accuracy_train))
 
-        if f1_val > max_val_f1_score:
-          max_val_f1_score = f1_val
+        if f2_val > max_val_f2_score:
+          max_val_f2_score = f2_val
           best_model = copy.deepcopy(model)
 
   print('finished training!')
-  return best_model, max_val_f1_score, metrics
+  return best_model, max_val_f2_score, metrics
 
 
 

@@ -11,7 +11,8 @@ def get_data_filenames(sequence_window_secs, crash_window):
   file_prefix = 'seq_len_' + str(sequence_window_secs) + '_window_' + str(crash_window[0]) + '_' + str(crash_window[1])
   data_filename = file_prefix + '_data.pt'
   labels_filename = file_prefix + '_labels.pt'
-  return (data_filename, labels_filename)
+  sequence_info_filename = file_prefix + '_info.txt'
+  return (data_filename, labels_filename, sequence_info_filename)
 
 # get name of experiments folder
 def get_experiments_folder_name(sequence_window_secs, crash_window):
@@ -85,7 +86,7 @@ def check_accuracy(model, data, print_stats):
   return f1, f2, precision, recall, accuracy
 
 def load_numpy_data(seq_len, window_size, normalize=True):
-  data_filename, labels_filename = get_data_filenames(seq_len, window_size)
+  data_filename, labels_filename, sequence_info_filename = get_data_filenames(seq_len, window_size)
   root_dir = '../data/pytorch/'
   X = torch.load(root_dir + data_filename).numpy()
   y = torch.load(root_dir + labels_filename).numpy()
@@ -100,12 +101,13 @@ def load_numpy_data(seq_len, window_size, normalize=True):
   return X_train, X_test, y_train, y_test
 
 def load_pytorch_data(seq_len, window_size, batch_size=32):
-  data_filename, labels_filename = get_data_filenames(seq_len, window_size)
+  data_filename, labels_filename, sequence_info_filename = get_data_filenames(seq_len, window_size)
 
   data = DriverSequenceDataset(data_filename, labels_filename, '../data/pytorch/')
   train_size = int(0.8 * len(data))
   validation_size = len(data) - train_size
   train_data_split, validation_data_split = torch.utils.data.random_split(data, [train_size, validation_size])
+  print(validation_data_split)
   print('Length of training data... {}'.format(train_size))
   print('Length of validation data... {}'.format(validation_size))
 
