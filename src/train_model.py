@@ -10,7 +10,7 @@ SEQ_SIZE = 150
 HZ = 30
 
 #TODO: write to file, checkpoint
-def train(seq_len, window_size, model_type, params, batch_size=16, num_epochs=20, print_every=10):
+def train(seq_len, window_size, model_type, params, batch_size=16, num_epochs=20, print_every=5):
   metrics = []
   max_val_f2_score = 0.
   best_model = None
@@ -19,8 +19,7 @@ def train(seq_len, window_size, model_type, params, batch_size=16, num_epochs=20
   if model_type == 'LSTM':
     model = SimpleLSTM(INPUT_SIZE, params['lstm_hidden_size'])
   elif model_type == 'CNN':
-    SEQ
-    model = SimpleCNN(HZ * seq_len, params['cnn_hidden_size'])
+    model = SimpleCNN(int(HZ * seq_len), params['cnn_hidden_size'])
   else:
     raise Exception('invalid model type')
   optimizer = torch.optim.Adam(model.parameters(), lr=params['lr'])

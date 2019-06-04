@@ -26,8 +26,8 @@ if __name__ == '__main__':
   parser.add_argument('--seq_len', type=int, required=True, help='Sequence length')
   parser.add_argument('--window_s', type=int, required=True, help='Window start')
   parser.add_argument('--window_e', type=int, required=True, help='Window start')
-  parser.add_argument('--num_lstm_experiments', type=int, default=10)
-  parser.add_argument('--num_cnn_experiments', type=int, default=10)
+  parser.add_argument('--num_lstm_experiments', type=int, default=100)
+  parser.add_argument('--num_cnn_experiments', type=int, default=100)
   args = parser.parse_args()
 
   seq_len = args.seq_len
