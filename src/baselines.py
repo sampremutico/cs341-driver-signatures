@@ -14,9 +14,22 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import torch, os
 from utils import load_numpy_data
+<<<<<<< HEAD
 import argparse
+=======
+import json
+
+>>>>>>> 1f46682cfd677e02d0030692c54139e3e7194eea
 
 # import xgboost as xgb
+
+def load_column_names():
+	with open('column_names.json', 'r') as f:
+	    col_map = json.load(f)
+	    assert(type(col_map)==dict)
+	    col_map = { int(k): v for k,v in col_map.items() }
+	    f.close()
+	    return col_map
 
 def score_model(model_name, model, X_train, X_test, y_train, y_test):
 	model.fit(X_train, y_train)
@@ -28,6 +41,31 @@ def score_model(model_name, model, X_train, X_test, y_train, y_test):
 	print(classification_report(y_test, y_pred, labels=[0, 1]))
 	print("="*50)
 
+	if model_name == 'Random Forest': random_forest_importance(model, X_train, num_features_to_plot=20)
+
+def random_forest_importance(model, X_train, num_features_to_plot=None):
+	if num_features_to_plot is None: num_features_to_plot = X_train.shape[1]
+
+	importances = model.feature_importances_
+	std = np.std([mod.feature_importances_ for mod in model.estimators_], axis=0)
+	indices = np.argsort(importances)[::-1]
+
+	col_map = load_column_names()
+	print("Feature ranking:")
+
+	features = []
+	for f in range(num_features_to_plot):
+		feature = col_map[indices[f]]
+		print("%d. feature %s (%f)" % (f + 1, feature, importances[indices[f]]))
+		features.append(feature.lower())
+
+	plt.figure()
+	plt.title("Feature importances")
+	plt.bar(range(num_features_to_plot), importances[indices][:num_features_to_plot], color="r", yerr=std[indices][:num_features_to_plot], align="center")
+	plt.xticks(range(num_features_to_plot), features, fontsize=8)
+	plt.xlim([-1, num_features_to_plot])
+	plt.xticks(rotation=80)
+	plt.show()
 
 if __name__ == '__main__':
 	parser = argparse.ArgumentParser()
@@ -36,13 +74,28 @@ if __name__ == '__main__':
 	parser.add_argument('--window_e', type=int, required=True, help='Window start')
 	args = parser.parse_args()
 
+<<<<<<< HEAD
 	seq_len = args.seq_len
 	window_size = (args.window_s, args.window_e)
 
 	X_train, X_test, y_train, y_test = load_numpy_data(seq_len, window_size)
 	X_train = X_train.reshape(X_train.shape[0], -1)
 	X_test = X_test.reshape(X_test.shape[0], -1)
+=======
+	X_train, X_test, y_train, y_test = load_numpy_data()
+	print('X_train shape: {}'.format(X_train.shape))
+	print('y_train shape: {}'.format(y_train.shape))
+	print('X_test shape: {}'.format(X_test.shape))
+	print('y_test shape: {}'.format(y_test.shape))
 
+>>>>>>> 1f46682cfd677e02d0030692c54139e3e7194eea
+
+	print("Averaging across all {} timesteps per sequence".format(X_train.shape[1]))
+	X_train = np.mean(X_train, axis=1)
+	X_test = np.mean(X_test, axis=1)
+
+	# X_train = X_train.reshape(X_train.shape[0], -1)
+	# X_test = X_test.reshape(X_test.shape[0], -1)
 
 	logistic_regression = LogisticRegression(penalty='l2', dual=False, tol=0.0001, C=1.0, \
 							fit_intercept=True, intercept_scaling=1, class_weight=None, \
@@ -79,9 +132,11 @@ if __name__ == '__main__':
 								nesterovs_momentum=True, early_stopping=False, validation_fraction=0.1, \
 								beta_1=0.9, beta_2=0.999, epsilon=1e-08)
 
-	model_map = {'Logistic Regression': logistic_regression, 'Random Forest': random_forest, \
-				'Support Vector Classification': svc, 'Decision Tree': decision_tree, 'Gradient Boosting': gradient_boosting, \
+	model_map = {'Logistic Regression': logistic_regression, 'Gradient Boosting': gradient_boosting, \
+				'Support Vector Classification': svc, 'Decision Tree': decision_tree, \
 				'Gaussian Process': gaussian_process, 'Multilayer Perceptron': multilayer_perceptron}
 
+	score_model('Random Forest', random_forest, X_train, X_test, y_train, y_test)
 	for name, model in model_map.items():
 		score_model(name, model, X_train, X_test, y_train, y_test)
+
