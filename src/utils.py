@@ -78,10 +78,11 @@ def check_accuracy(model, data, print_stats):
     print('precision: {}'.format(precision))
     print('recall: {}'.format(recall))
     print('f1: {}'.format(f1))
+    print('f2: {}'.format(f2))
     print('total number of crashes: {}'.format(num_crashes))
     print('crashes predicted: {}'.format(crashes_predicted))
     print('')
-  return f1, precision, recall, accuracy
+  return f1, f2, precision, recall, accuracy
 
 def load_numpy_data(seq_len, window_size, normalize=True):
   data_filename, labels_filename = get_data_filenames(seq_len, window_size)
