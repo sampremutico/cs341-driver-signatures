@@ -15,9 +15,9 @@ class DriverSequenceDataset(Dataset):
       X_normalized = (X_flattened - mean)/std
       self.X = X_normalized.view(N, T, D)
 
-
   def __len__(self):
     return self.X.size()[0]
 
   def __getitem__(self, idx):
-    return (self.X[idx], self.y[idx])
+    return (self.X[idx], self.y[idx], idx)
+

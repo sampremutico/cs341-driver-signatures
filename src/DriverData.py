@@ -11,7 +11,7 @@ from datetime import datetime
 from matplotlib import pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 from tqdm import tqdm
-from visualize_crashes import plot_course
+# from visualize_crashes import plot_course
 import torch
 import os
 import json
@@ -35,7 +35,7 @@ class DriverData():
 		if load == False:
 			self.df = pd.read_csv(self.csv)
 			self.add_coordinate_data()
-			self.drop_cols()
+			# self.drop_cols()
 			self.num_rows = self.df.shape[0]
 			self.df.to_pickle(path=self.user+"_raw_ride.pkl")
 		else:
@@ -195,7 +195,7 @@ class DriverData():
 
 		no_crash_sequence_indices = []
 		num_possible_no_crash_sequences, num_actual_no_crash_sequences = 0, 0
-		for i in range(0, self.num_rows, total_time_sequence_length * READING_HZ):
+		for i in range(0, self.num_rows, int(total_time_sequence_length * READING_HZ)):
 			num_possible_no_crash_sequences += 1
 			no_crash_possible_extended_sequence = (i, i + total_time_sequence_length * READING_HZ)
 			if does_sequence_overlap_crash_sequence(no_crash_possible_extended_sequence, crash_extended_sequence_indices):
@@ -209,18 +209,44 @@ class DriverData():
 
 		num_total_sequences = len(crash_sequence_indices) + len(no_crash_sequence_indices)
 		print('Found {} total sequences, {} crash sequences and {} no crash sequences'.format(num_total_sequences, len(crash_sequence_indices), len(no_crash_sequence_indices)))
-		sequence_length = sequence_window_secs * READING_HZ
+		sequence_length = int(sequence_window_secs * READING_HZ)
 
+
+		# PUT THIS HERE NOW
+		print('got here')
+		lines = []
+		for i, (start_seq, end_seq) in enumerate(crash_sequence_indices):
+			sequence = self.df.loc[start_seq:end_seq-1]
+			area_id = sequence['AREA_ID'].tolist()[0]
+			x_coords = sequence['POSITION_X'].tolist()
+			y_coords = sequence['POSITION_Y'].tolist()
+			x_coord, y_coord = np.mean(x_coords), np.mean(y_coords)
+			lines.append((area_id, x_coord, y_coord))
+		for i, (start_seq, end_seq) in enumerate(no_crash_sequence_indices):
+			sequence = self.df.loc[start_seq:end_seq-1]
+			area_id = sequence['AREA_ID'].tolist()[0]
+			x_coords = sequence['POSITION_X'].tolist()
+			y_coords = sequence['POSITION_Y'].tolist()
+			x_coord, y_coord = np.mean(x_coords), np.mean(y_coords)
+			lines.append((area_id, x_coord, y_coord))
+
+		data_filename, labels_filename, sequence_info_filename = get_data_filenames(sequence_window_secs, crash_window)
+		f = open('../data/sequence_info/' + sequence_info_filename, 'w+')
+		for line in lines:
+			area_id, x_coord, y_coord = line
+			f.write('{} {} {}\n'.format(area_id, x_coord, y_coord))
+		f.close()
 
 		# we are done with these now
 		self.df = self.df.drop(['crash_label', 'crash_within_pred_window', 'TIMESTAMP', 'POSITION_X', 'POSITION_Y', 'POSITION_Z', 'COLLISION_ID_1', 'COLLISION_ID_2'], axis=1)
+		self.drop_cols()
 		num_input_cols = len(self.df.columns.values)
 
 		# dump dict with column index to name in json file
 		colname_dict = {}
 		for i, colname in enumerate(list(self.df)):
 			colname_dict[i] = colname
-		with open('idx_to_column_names.json', 'w') as f:
+		with open('idx_to_column_names.json', 'a+') as f:
 			json.dump(colname_dict, f)
 
 		X, Y = np.ndarray((num_total_sequences, sequence_length, num_input_cols)), np.zeros(num_total_sequences)
@@ -269,7 +295,7 @@ class DriverData():
 
 if __name__ == '__main__':
 	parser = argparse.ArgumentParser()
-	parser.add_argument('--seq_len', type=int, required=True, help='Sequence length')
+	parser.add_argument('--seq_len', type=float, required=True, help='Sequence length')
 	parser.add_argument('--window_s', type=int, required=True, help='Window start')
 	parser.add_argument('--window_e', type=int, required=True, help='Window start')
 	args = parser.parse_args()
@@ -294,7 +320,7 @@ if __name__ == '__main__':
 	Y_final = torch.cat(Y_tensors, dim=0)
 	print('final shape of X data', X_final.size())
 	print('final shape of Y data', Y_final.size())
-	data_filename, labels_filename = get_data_filenames(seq_len, window_size)
+	data_filename, labels_filename, sequence_info_filename = get_data_filenames(seq_len, window_size)
 
 	torch.save(X_final, PYTORCH_DATA_DIR + data_filename)
 	torch.save(Y_final, PYTORCH_DATA_DIR + labels_filename)
