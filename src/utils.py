@@ -44,6 +44,9 @@ def metrics(y_pred, y_true):
 
   return tp, fp, tn, fn, correct, num_crashes, num_preds, crashes_predicted
 
+def get_F_n_score(n, precision, recall):
+  return (1 + n ** 2) *  (precision * recall) / (n ** 2 * precision + recall + 1e-5)
+
 def check_accuracy(model, data, print_stats):
   tp, fp, tn, fn, correct, num_crashes, num_preds, crashes_predicted = 0, 0, 0, 0, 0, 0, 0, 0
   with torch.no_grad():
@@ -65,7 +68,10 @@ def check_accuracy(model, data, print_stats):
 
   precision = float(tp) / (tp + fp + 1e-5)
   recall = float(tp) / (tp + fn + 1e-5)
-  f1 = 2 * (precision * recall) / (precision + recall + 1e-5)
+  # f1 = 2 * (precision * recall) / (precision + recall + 1e-5)
+  f1 = get_F_n_score(1, precision, recall)
+  f2 = get_F_n_score(2, precision, recall)
+
   accuracy = float(correct) / num_preds
   if print_stats:
     print('overall accuracy: {}/{} ({}%)'.format(correct, num_preds, accuracy))
