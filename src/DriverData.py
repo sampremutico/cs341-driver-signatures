@@ -231,7 +231,7 @@ class DriverData():
 			lines.append((area_id, x_coord, y_coord))
 
 		data_filename, labels_filename, sequence_info_filename = get_data_filenames(sequence_window_secs, crash_window)
-		f = open('../data/sequence_info/' + sequence_info_filename, 'w+')
+		f = open('../data/sequence_info/' + sequence_info_filename, 'a+')
 		for line in lines:
 			area_id, x_coord, y_coord = line
 			f.write('{} {} {}\n'.format(area_id, x_coord, y_coord))
@@ -246,7 +246,7 @@ class DriverData():
 		colname_dict = {}
 		for i, colname in enumerate(list(self.df)):
 			colname_dict[i] = colname
-		with open('idx_to_column_names.json', 'a+') as f:
+		with open('idx_to_column_names.json', 'w') as f:
 			json.dump(colname_dict, f)
 
 		X, Y = np.ndarray((num_total_sequences, sequence_length, num_input_cols)), np.zeros(num_total_sequences)

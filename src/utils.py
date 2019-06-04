@@ -8,7 +8,7 @@ np.random.seed(42)
 
 # get names of data files we want to load
 def get_data_filenames(sequence_window_secs, crash_window):
-  file_prefix = 'seq_len_' + str(sequence_window_secs) + '_window_' + str(crash_window[0]) + '_' + str(crash_window[1])
+  file_prefix = 'seq_len_' + str(float(sequence_window_secs)) + '_window_' + str(crash_window[0]) + '_' + str(crash_window[1])
   data_filename = file_prefix + '_data.pt'
   labels_filename = file_prefix + '_labels.pt'
   sequence_info_filename = file_prefix + '_info.txt'
@@ -16,7 +16,7 @@ def get_data_filenames(sequence_window_secs, crash_window):
 
 # get name of experiments folder
 def get_experiments_folder_name(sequence_window_secs, crash_window):
-  file_prefix = 'seq_len_' + str(sequence_window_secs) + '_window_' + str(crash_window[0]) + '_' + str(crash_window[1]) + '/'
+  file_prefix = 'seq_len_' + str(float(sequence_window_secs)) + '_window_' + str(crash_window[0]) + '_' + str(crash_window[1]) + '/'
   return file_prefix
 
 def metrics(y_pred, y_true):
@@ -51,7 +51,7 @@ def get_F_n_score(n, precision, recall):
 def check_accuracy(model, data, print_stats):
   tp, fp, tn, fn, correct, num_crashes, num_preds, crashes_predicted = 0, 0, 0, 0, 0, 0, 0, 0
   with torch.no_grad():
-      for (val_X_batch, val_y_batch) in data:
+      for (val_X_batch, val_y_batch, idx) in data:
           val_X_batch = val_X_batch.float()
           val_y_batch = val_y_batch.long()
           output = model(val_X_batch)
@@ -107,7 +107,6 @@ def load_pytorch_data(seq_len, window_size, batch_size=32):
   train_size = int(0.8 * len(data))
   validation_size = len(data) - train_size
   train_data_split, validation_data_split = torch.utils.data.random_split(data, [train_size, validation_size])
-  print(validation_data_split)
   print('Length of training data... {}'.format(train_size))
   print('Length of validation data... {}'.format(validation_size))
 

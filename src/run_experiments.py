@@ -9,7 +9,7 @@ time = str(datetime.datetime.now())
 time = time.split()
 
 EXPERIMENTS_PATH = 'experiments/'
-os.makedirs(EXPERIMENTS_PATH)
+if not os.path.exists(os.path.dirname(EXPERIMENTS_PATH)): os.makedirs(EXPERIMENTS_PATH)
 
 # Optimize this for F2 scores!
 
@@ -26,8 +26,8 @@ if __name__ == '__main__':
   parser.add_argument('--seq_len', type=int, required=True, help='Sequence length')
   parser.add_argument('--window_s', type=int, required=True, help='Window start')
   parser.add_argument('--window_e', type=int, required=True, help='Window start')
-  parser.add_argument('num_lstm_experiments', type=int, default=10)
-  parser.add_argument('num_cnn_experiments', type=int, default=10)
+  parser.add_argument('--num_lstm_experiments', type=int, default=10)
+  parser.add_argument('--num_cnn_experiments', type=int, default=10)
   args = parser.parse_args()
 
   seq_len = args.seq_len
@@ -40,12 +40,11 @@ if __name__ == '__main__':
   experiments_folder_name = get_experiments_folder_name(seq_len, window_size)
   CNN_PATH = EXPERIMENTS_PATH + experiments_folder_name + 'cnn/'
   LSTM_PATH = EXPERIMENTS_PATH + experiments_folder_name + 'lstm/'
-
   if not os.path.exists(os.path.dirname(CNN_PATH)): os.makedirs(CNN_PATH)
   if not os.path.exists(os.path.dirname(LSTM_PATH)): os.makedirs(LSTM_PATH)
 
   for i in range(args.num_cnn_experiments):
-    print('Running CNN experiment {}/{}'.format(i + 1, num_cnn_experiments))
+    print('Running CNN experiment {}/{}'.format(i + 1, args.num_cnn_experiments))
     cnn_hidden_size_layer1 = np.random.choice(cnn_hidden_sizes)
     cnn_hidden_size = (cnn_hidden_size_layer1, int(cnn_hidden_size_layer1 / 2))
     lr = 10 ** np.random.uniform(-6, -2)
@@ -63,7 +62,7 @@ if __name__ == '__main__':
 
 
   for i in range(args.num_lstm_experiments):
-    print('Running LSTM experiment {}/{}'.format(i + 1, num_lstm_experiments))
+    print('Running LSTM experiment {}/{}'.format(i + 1, args.num_lstm_experiments))
     lstm_hidden_size = np.random.choice(lstm_hidden_sizes)
     # lr = 10 ** np.random.uniform(-6, -2)
     loss_weight_class1 = np.random.choice(loss_weight_class1_vals)
