@@ -14,6 +14,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import torch, os
 from utils import load_numpy_data
+import argparse
 
 # import xgboost as xgb
 
@@ -29,8 +30,16 @@ def score_model(model_name, model, X_train, X_test, y_train, y_test):
 
 
 if __name__ == '__main__':
+	parser = argparse.ArgumentParser()
+	parser.add_argument('--seq_len', type=int, required=True, help='Sequence length')
+	parser.add_argument('--window_s', type=int, required=True, help='Window start')
+	parser.add_argument('--window_e', type=int, required=True, help='Window start')
+	args = parser.parse_args()
 
-	X_train, X_test, y_train, y_test = load_numpy_data()
+	seq_len = args.seq_len
+	window_size = (args.window_s, args.window_e)
+
+	X_train, X_test, y_train, y_test = load_numpy_data(seq_len, window_size)
 	X_train = X_train.reshape(X_train.shape[0], -1)
 	X_test = X_test.reshape(X_test.shape[0], -1)
 

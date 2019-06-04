@@ -6,6 +6,18 @@ import numpy as np
 
 np.random.seed(42)
 
+# get names of data files we want to load
+def get_data_filenames(sequence_window_secs, crash_window):
+  file_prefix = 'seq_len_' + str(sequence_window_secs) + '_window_' + str(crash_window[0]) + '_' + str(crash_window[1])
+  data_filename = file_prefix + '_data.pt'
+  labels_filename = file_prefix + '_labels.pt'
+  return (data_filename, labels_filename)
+
+# get name of experiments folder
+def get_experiments_folder_name(sequence_window_secs, crash_window):
+  file_prefix = 'seq_len_' + str(sequence_window_secs) + '_window_' + str(crash_window[0]) + '_' + str(crash_window[1]) + '/'
+  return file_prefix
+
 def metrics(y_pred, y_true):
   y_pred, y_true = y_pred.numpy(), y_true.numpy()
   assert(len(y_pred) == len(y_true))
@@ -30,13 +42,12 @@ def metrics(y_pred, y_true):
     if y_pred[i] == 1:
       crashes_predicted += 1
 
-
   return tp, fp, tn, fn, correct, num_crashes, num_preds, crashes_predicted
 
-def check_validation_accuracy(model, validation_data):
+def check_accuracy(model, data, print_stats):
   tp, fp, tn, fn, correct, num_crashes, num_preds, crashes_predicted = 0, 0, 0, 0, 0, 0, 0, 0
   with torch.no_grad():
-      for (val_X_batch, val_y_batch) in validation_data:
+      for (val_X_batch, val_y_batch) in data:
           val_X_batch = val_X_batch.float()
           val_y_batch = val_y_batch.long()
           output = model(val_X_batch)
@@ -52,38 +63,39 @@ def check_validation_accuracy(model, validation_data):
           num_preds += bnum_preds
           crashes_predicted += bcrashes_predicted
 
-  precision = float(tp) / (tp + fp)
-  recall = float(tp) / (tp + fn)
-  f1 = 2 * (precision * recall) / (precision + recall)
+  precision = float(tp) / (tp + fp + 1e-5)
+  recall = float(tp) / (tp + fn + 1e-5)
+  f1 = 2 * (precision * recall) / (precision + recall + 1e-5)
   accuracy = float(correct) / num_preds
-  print('validation overall accuracy: {}/{} ({}%)'.format(correct, num_preds, accuracy))
-  print('precision: {}'.format(precision))
-  print('recall: {}'.format(recall))
-  print('f1: {}'.format(f1))
-  print('total number of crashes: {}'.format(num_crashes))
-  print('crashes predicted: {}'.format(crashes_predicted))
-  print('')
-  return f1
+  if print_stats:
+    print('overall accuracy: {}/{} ({}%)'.format(correct, num_preds, accuracy))
+    print('precision: {}'.format(precision))
+    print('recall: {}'.format(recall))
+    print('f1: {}'.format(f1))
+    print('total number of crashes: {}'.format(num_crashes))
+    print('crashes predicted: {}'.format(crashes_predicted))
+    print('')
+  return f1, precision, recall, accuracy
 
-def load_numpy_data():
+def load_numpy_data(seq_len, window_size, normalize=True):
+  data_filename, labels_filename = get_data_filenames(seq_len, window_size)
   root_dir = '../data/pytorch/'
-  file_X = 'data.pt'
-  file_y = 'labels.pt'
-  X = torch.load(root_dir + file_X).numpy()
-  y = torch.load(root_dir + file_y).numpy()
+  X = torch.load(root_dir + data_filename).numpy()
+  y = torch.load(root_dir + labels_filename).numpy()
 
   N, T, D = X.shape
-  X_flattened = X.reshape((N * T, D))
-
-  X_mean = np.mean(X_flattened, axis=0, keepdims=True)
-  X_std = np.std(X_flattened, axis=0, keepdims=True)
-  X = (X - X_mean) / X_std
+  if normalize:
+    X_mean = np.mean(X, axis=(0, 1))
+    X_std = np.std(X, axis=(0, 1))
+    X = (X - X_mean) / X_std
 
   X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
   return X_train, X_test, y_train, y_test
 
-def load_pytorch_data(batch_size=32):
-  data = DriverSequenceDataset('data.pt', 'labels.pt', '../data/pytorch/')
+def load_pytorch_data(seq_len, window_size, batch_size=32):
+  data_filename, labels_filename = get_data_filenames(seq_len, window_size)
+
+  data = DriverSequenceDataset(data_filename, labels_filename, '../data/pytorch/')
   train_size = int(0.8 * len(data))
   validation_size = len(data) - train_size
   train_data_split, validation_data_split = torch.utils.data.random_split(data, [train_size, validation_size])

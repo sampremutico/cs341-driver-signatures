@@ -4,17 +4,16 @@ import numpy as np
 import matplotlib.pyplot as plt
 from utils import load_pytorch_data, metrics, check_validation_accuracy
 
-
 INPUT_SIZE = 76
 
-def train(batch_size=16, lstm_hidden_size=50, lr=1e-4, loss_weights=[0.1, 0.9], print_every=20, checkpointing=False):
+def train(batch_size=16, num_epochs=20, lstm_hidden_size=50, lr=1e-4, loss_weights=[0.1, 0.9], print_every=20, checkpointing=False):
   train_data, validation_data = load_pytorch_data(batch_size)
   model = SimpleLSTM(INPUT_SIZE, lstm_hidden_size)
   optimizer = torch.optim.Adam(model.parameters(), lr)
   criterion = torch.nn.CrossEntropyLoss(torch.tensor(loss_weights))
   losses = []
   print('starting training!')
-  for epoch in range(20):
+  for epoch in range(num_epochs):
     print('starting epoch {}...'.format(epoch))
     for iter, (X_batch, y_batch) in enumerate(train_data):
       X_batch = X_batch.float()
@@ -38,7 +37,6 @@ def train(batch_size=16, lstm_hidden_size=50, lr=1e-4, loss_weights=[0.1, 0.9], 
   print('finished training!')
 
 
-
 # TODO:
 # Plot loss curves, validation accuracy/f1 scorees
 # hyperparameter tuning
@@ -46,6 +44,6 @@ def train(batch_size=16, lstm_hidden_size=50, lr=1e-4, loss_weights=[0.1, 0.9], 
 # optimizer?
 # checkpoint models
 
-train(batch_size=16, lr=1e-3)
-train(batch_size=16, lr=1e-4)
-train(batch_size=16, lr=1e-5)
+# train(batch_size=128, lr=1e-3)
+# train(batch_size=32, lr=1e-4)
+# train(batch_size=16, lr=1e-5)

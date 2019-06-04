@@ -19,9 +19,8 @@ class SimpleCNN(torch.nn.Module):
 
 		self.relu = F.relu
 		out = int(hidden_size[1]/2)
-		print(out)
 		self.projection = nn.Linear(out*self.D, self.num_classes)
-		
+
 	def forward(self, x):
 		#print("Input : {}".format(x.shape))
 		x_conv_1_out = self.conv1(x)
@@ -38,5 +37,5 @@ class SimpleCNN(torch.nn.Module):
 		#print("Reshaped : {}".format(x_final.shape))
 
 		scores = self.projection(x_final)
-		
+
 		return scores

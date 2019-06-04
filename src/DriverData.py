@@ -15,6 +15,8 @@ from visualize_crashes import plot_course
 import torch
 import os
 import json
+from utils import get_data_filenames
+import argparse
 
 DATA_DIR = "../data/cs341-driver-data/nervtech/v1/drives-with-collisions/"
 PYTORCH_DATA_DIR = "../data/pytorch/"
@@ -114,7 +116,6 @@ class DriverData():
 		#	print("Time {}".format(crash_times[i]))
 		#	print("Coordinates {},{}".format(crash_x_coords[i], crash_y_coords[i]))
 		#	print('')
-
 
 		return crash_labels
 
@@ -219,7 +220,7 @@ class DriverData():
 		colname_dict = {}
 		for i, colname in enumerate(list(self.df)):
 			colname_dict[i] = colname
-		with open('column_names.json', 'w') as f:
+		with open('idx_to_column_names.json', 'w') as f:
 			json.dump(colname_dict, f)
 
 		X, Y = np.ndarray((num_total_sequences, sequence_length, num_input_cols)), np.zeros(num_total_sequences)
@@ -267,6 +268,14 @@ class DriverData():
 
 
 if __name__ == '__main__':
+	parser = argparse.ArgumentParser()
+	parser.add_argument('--seq_len', type=int, required=True, help='Sequence length')
+	parser.add_argument('--window_s', type=int, required=True, help='Window start')
+	parser.add_argument('--window_e', type=int, required=True, help='Window start')
+	args = parser.parse_args()
+
+	seq_len = args.seq_len
+	window_size = (args.window_s, args.window_e)
 
 	X_tensors = []
 	Y_tensors = []
@@ -275,9 +284,8 @@ if __name__ == '__main__':
 	for f in os.listdir(DATA_DIR):
 		print('processing data for {}'.format(f))
 		driver = DriverData(f, load=False)
-
 		driver.segment_crashes(load=False)
-		X, Y = driver.generate_sequences()
+		X, Y = driver.generate_sequences(seq_len, window_size)
 		X_tensors.append(X)
 		Y_tensors.append(Y)
 		print('')
@@ -286,7 +294,8 @@ if __name__ == '__main__':
 	Y_final = torch.cat(Y_tensors, dim=0)
 	print('final shape of X data', X_final.size())
 	print('final shape of Y data', Y_final.size())
-	torch.save(X_final, PYTORCH_DATA_DIR + 'data.pt')
-	torch.save(Y_final, PYTORCH_DATA_DIR + 'labels.pt')
+	data_filename, labels_filename = get_data_filenames(seq_len, window_size)
 
+	torch.save(X_final, PYTORCH_DATA_DIR + data_filename)
+	torch.save(Y_final, PYTORCH_DATA_DIR + labels_filename)
 
